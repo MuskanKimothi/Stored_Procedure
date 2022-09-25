@@ -1,0 +1,58 @@
+CREATE PROC [dbo].[prcSaveSalesorder]
+@SalesOrderID bigint,
+@SalesOrderDetailID bigint,
+@CarrierTrackingNumber nvarchar,
+@OrderQty smallint,
+@ProductID bigint,
+@SpecialOfferID bigint,
+@UnitPrice money,
+@UnitPriceDiscount money,
+
+@rowguid uniqueidentifier,
+@ModifiedDate datetime
+As
+BEGIN
+    
+BEGIN TRY
+    
+    BEGIN TRANSACTION
+
+
+
+    INSERT INTO sales.salesorderdetail
+        ([rowguid], [ModifiedDate])
+        Values(NEWID(), getdate())
+        
+        Declare @Id bigint
+        Select @ID = SCOPE_IDENTITY()
+
+
+
+
+    Insert into Sales.SalesOrderDetail(SalesOrderID, SalesOrderDetailID, CarrierTrackingNumber, OrderQty, ProductID, SpecialOfferID, UnitPrice, UnitPriceDiscount)
+    values (@SalesOrderID,@SalesOrderDetailID, @CarrierTrackingNumber, @OrderQty, @ProductID, @SpecialOfferID, @UnitPrice, @UnitPriceDiscount)
+    COMMIT TRANSACTION
+
+END TRY
+BEGIN CATCH
+    if(@@TRANCOUNT>0)
+        ROLLBACK TRANSACTION
+
+       EXEC dbo.uspLogError
+END CATCH
+END
+
+
+EXEC [dbo].[prcSaveSalesorder]
+@SalesOrderID = 1,
+@SalesOrderDetailID = 123,
+@CarrierTrackingNumber = 234,
+@OrderQty = 3,
+@ProductID = 4,
+@SpecialOfferID = 2,
+@UnitPrice = 34,
+@UnitPriceDiscount = 345,
+@rowguid = 876,
+@ModifiedDate = '1997/12/2'
+
+Select * from Sales.SalesOrderDetail
